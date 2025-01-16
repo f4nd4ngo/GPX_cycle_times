@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from geopy.distance import geodesic
 import datetime
+import argparse  # Add argparse for command-line arguments
 
 # --------------------------------------------------
 # USER CONFIGURATION
@@ -274,9 +275,15 @@ def plot_map_view(df, filename='map_cycles.png'):
 # Main Execution
 # --------------------------------------------------
 def main():
+    # Parse command-line arguments
+    parser = argparse.ArgumentParser(description='Process GPX file and analyze haul cycles.')
+    parser.add_argument('gpx_file', type=str, help='Path to the GPX file')
+    parser.add_argument('--output_prefix', type=str, default='output', help='Prefix for output files')
+    args = parser.parse_args()
+
     # 1. Parse GPX
-    df = parse_gpx_to_df(GPX_FILE)
-    print(f"Loaded {len(df)} points from {GPX_FILE}.")
+    df = parse_gpx_to_df(args.gpx_file)
+    print(f"Loaded {len(df)} points from {args.gpx_file}.")
 
     # 2. Detect cycles
     df = detect_cycles(df, START_ZONE_CENTER, START_ZONE_RADIUS,
@@ -288,13 +295,13 @@ def main():
     print(cycle_summary)
     
     # 4. (Optional) Save summary to CSV or Excel
-    cycle_summary.to_csv('cycle_summary.csv', index=False)
-    df.to_csv('points_with_cycles.csv', index=False)
+    cycle_summary.to_csv(f'{args.output_prefix}_cycle_summary.csv', index=False)
+    df.to_csv(f'{args.output_prefix}_points_with_cycles.csv', index=False)
     
     # 5. Plot outputs
-    plot_cycle_gantt(cycle_summary, filename='gantt_cycles.png')
-    plot_speed_time(df, filename='speed_time.png')
-    plot_map_view(df, filename='map_cycles.png')
+    plot_cycle_gantt(cycle_summary, filename=f'{args.output_prefix}_gantt_cycles.png')
+    plot_speed_time(df, filename=f'{args.output_prefix}_speed_time.png')
+    plot_map_view(df, filename=f'{args.output_prefix}_map_cycles.png')
 
 if __name__ == '__main__':
     main()
